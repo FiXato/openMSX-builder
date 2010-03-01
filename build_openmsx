@@ -248,11 +248,11 @@ private
 
   def build
     if openmsx?
-      cleanup_dmg_locks
       if dmg_for_revision?(@new_revision)
         debug "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-x86-bin.dmg")).first}"
         return nil
       end
+      cleanup_dmg_locks
     elsif openmsx_debugger?
       if archive_for_revision?(@new_revision)
         debug "Revision already build as #{File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")}"
