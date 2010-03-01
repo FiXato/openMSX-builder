@@ -6,6 +6,18 @@ Successfully published builds can also be announced via Twitter. [@openmsx_build
 
 Setup of the oauth info has to be done manually at the moment, for more information on that read, about the amazing [twitter_oauth gem][7], [Twitter's oAuth Applications][8] and [Twitter's Authentication Wiki][9]
 
+## Commandline Arguments
+******************************************************************************
+Currently `./build_openmsx` supports the following commandline arguments:
+
+* --debug                 => Generate debug output.
+* --publish               => Publish the created build
+* --publish-current       => Only publish the current build and exit
+* --publish-all           => Only publish all previously created builds and exit
+* --tweet                 => Send a tweet via @openMSX_Builder after successfully having published a build
+* --dont-update           => Don't update the SVN repository
+* --report-build-failure  => If an error occurs during build, report failure via e-mail
+
 ## ToDo
 ******************************************************************************
 Current list of tasks is:
