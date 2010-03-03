@@ -1,70 +1,6 @@
-#!/usr/bin/env ruby
-# Automatic builder for openMSX and openMSX-Debugger builds for Mac OSX.
-# Options:
-# --debug                 => Generate debug output.
-# --publish               => Publish the created build
-# --publish-current       => Only publish the current build and exit
-# --publish-all           => Only publish all previously created builds and exit
-# --tweet                 => Send a tweet via @openMSX_Builder after successfully having published a build
-# --dont-update           => Don't update the SVN repository
-# --report-build-failure  => If an error occurs during build, report failure via e-mail
-require 'rubygems'
-require 'mail'
-require 'yaml'
-require 'twitter_oauth'
-
-def debug(*args)
-  unless ARGV.include?('--silent')
-    args.each do |arg|
-      puts "[#{Time.now.strftime("%H:%M:%S")}] #{arg}"
-    end
-  end
-end
-class TweetMsx
-  class NotConfigured < RuntimeError;end
-  CONFIG_FILENAME = File.expand_path('~/.openMSX-builder-TweetMSX.yaml')
-  DEFAULTS = {
-    :client => {
-      :consumer_key => '',
-      :consumer_secret => '',
-      :token => '',
-      :secret => '',
-    }
-  }
-  attr_reader :client, :twitter_down
-  def initialize
-    @client = TwitterOAuth::Client.new(config[:client])
-  end
-
-  def config
-    create_default_config unless File.exist?(CONFIG_FILENAME)
-    @config ||= YAML.load_file(CONFIG_FILENAME)
-    raise NotConfigured.new("You need to set up your config file at #{CONFIG_FILENAME} first") if @config == DEFAULTS
-    @config
-  end
-
-  def create_default_config
-    system("mkdir -p #{File.dirname(CONFIG_FILENAME)}")
-    File.open(CONFIG_FILENAME,'w') do |f|
-      f.write DEFAULTS.to_yaml
-    end
-  end
-
-  def update(message)
-    debug "#{message} [#{message.size} chars]"
-    if @client.rate_limit_status == 0
-      debug "You've exceeded your rate limit"
-      return nil
-    end
-    @client.update(message)
-    nil
-  rescue SocketError
-    debug "Could not send '#{message}'. Twitter or your connection might be down."
-    nil
-  end
-end
-
+load 'lib/debug_tools.rb'
 class OpenmsxBuilder
+  include DebugTools
   class NotConfigured < RuntimeError;end
   CONFIG_FILENAME = File.expand_path('~/.openMSX-builder.yaml')
   DEFAULTS = {
@@ -331,10 +267,3 @@ private
     @type == :openmsx_debugger
   end
 end
-
-debug('-'*50)
-debug("Starting with openMSX")
-OpenmsxBuilder.new(ARGV,:openmsx).run
-debug('-'*50)
-debug("Proceeding with openMSX-Debugger")
-OpenmsxBuilder.new(ARGV,:openmsx_debugger).run

@@ -22,7 +22,6 @@ Currently `./build_openmsx` supports the following commandline arguments:
 ******************************************************************************
 Current list of tasks is:
 
-+ Split TweetMsx and OpenmsxBuilder into their own files
 + Make a gem out of this tool
 + Publish gem to Gemcutter
 + Integrate with CIA.vc / Ruby-Rbot
