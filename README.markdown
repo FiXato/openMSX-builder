@@ -6,6 +6,7 @@ Successfully published builds can also be announced via Twitter. [@openmsx_build
 
 Setup of the oauth info has to be done manually at the moment, for more information on that read, about the amazing [twitter_oauth gem][7], [Twitter's oAuth Applications][8] and [Twitter's Authentication Wiki][9]
 
+
 ## Commandline Arguments
 ******************************************************************************
 Currently `./build_openmsx` supports the following commandline arguments:
@@ -18,6 +19,7 @@ Currently `./build_openmsx` supports the following commandline arguments:
 * --dont-update           => Don't update the SVN repository
 * --report-build-failure  => If an error occurs during build, report failure via e-mail
 
+
 ## ToDo
 ******************************************************************************
 Current list of tasks is:
@@ -29,6 +31,25 @@ Current list of tasks is:
 + Refactor `#archive_for_revision` and `#dmg_for_revision` into a single method
 + Create a simple Sinatra App for [openMSX.FiXato.net][5]
 + Allow for automatic setup of the oAuth tokens.
+
+
+## Notes on Patches/Pull Requests
+******************************************************************************
+
+1 Fork the project.
+2 Make your feature addition or bug fix.
+3 Add tests for it (even though I don't have tests myself at the moment). 
+  This is important so I don't break it in a future version unintentionally.
+4 Commit, but do not mess with Rakefile, version, history, or README.
+  Want to have your own version? Bump version in a separate commit!
+  That way I can ignored that commit when I pull.
+5 Send me a pull request. Bonus points for topic branches.
+
+
+## Copyright
+******************************************************************************
+Copyright (c) 2010 Filip H.F. "FiXato" Slagter. See LICENSE for details.
+
 
 ******************************************************************************
 [1]: https://openmsx.svn.sourceforge.net/svnroot/openmsx/openmsx/trunk (openMSX SVN Trunk)
