@@ -43,6 +43,7 @@ Simplest way to run it would usually be:
 Or by adding a cronjob for:
 `0 3 * * * build_openmsx --publish --tweet --report-build-failure`
 to have it run daily at 3 at night.
+(Remember to add either `source ~/.profile` or the right PATH to your cron.)
 
 
 ## ToDo
@@ -55,6 +56,8 @@ Current list of tasks is:
 + Create a simple Sinatra App for [openMSX.FiXato.net][5]
 + Allow for automatic setup of the oAuth tokens.
 + Add documentation on the YAML configuration files.
++ Add --configure argument that will trigger set up of the configuration files.
++ See if VERSION can be integrated into OpenmsxBuilder instead of just being parsed in the executable.
 
 ## Notes on Patches/Pull Requests
 ******************************************************************************
