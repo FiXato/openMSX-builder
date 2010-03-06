@@ -14,6 +14,7 @@ begin
     gemspec.has_rdoc = false
     # gemspec is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 and http://wiki.github.com/technicalpickles/jeweler/customizing-your-projects-gem-specification for additional settings
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler not available. Install it with: gem install jeweler"
 end
