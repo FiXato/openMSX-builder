@@ -4,33 +4,57 @@ openMSX-Builder is used for building the latest SVN checkouts of [openMSX][1] an
 It also supports publishing the created builds to an external location via [scp][4]. The original setup publishes to [FiXato's openMSX page][5].  
 Successfully published builds can also be announced via Twitter. [@openmsx_builder][6] is the official Twitter home for openMSX-Builder.  
 
-Setup of the oauth info has to be done manually at the moment, for more information on that read, about the amazing [twitter_oauth gem][7], [Twitter's oAuth Applications][8] and [Twitter's Authentication Wiki][9]
 
-
-## Commandline Arguments
+## Installation Guidelines
 ******************************************************************************
-Currently `./build_openmsx` supports the following commandline arguments:
+
+### From Git:
+`git clone git://github.com/FiXato/openMSX-builder.git && cd openMSX-builder && rake install`
+
+### From RubyForge/GemCutter:
+`gem install openMSX-builder`
+
+
+## Usage
+******************************************************************************
+
+The first 2 times you run `build_openmsx` it will probably say you will need to set up the configuration files for the builder and the twitter module.
+Setting up the SMTP and builder configuration settings should be pretty straightforward.
+Set up of the oauth info has to be done manually at the moment, for more information on that read about the amazing [twitter_oauth gem][7], [Twitter's oAuth Applications][8] and [Twitter's Authentication Wiki][9]
+
+
+### Commandline Arguments
+
+Currently `build_openmsx` supports the following commandline arguments:
 
 * --debug                 => Generate debug output.
 * --publish               => Publish the created build
 * --publish-current       => Only publish the current build and exit
 * --publish-all           => Only publish all previously created builds and exit
-* --tweet                 => Send a tweet via @openMSX_Builder after successfully having published a build
+* --tweet                 => Send a tweet via configured authorised Twitter account after successfully having published a build
 * --dont-update           => Don't update the SVN repository
 * --report-build-failure  => If an error occurs during build, report failure via e-mail
+
+### Examples
+
+Simplest way to run it would usually be:
+`build_openmsx --debug --publish --tweet --report-build-failure`
+
+Or by adding a cronjob for:
+`0 3 * * * build_openmsx --publish --tweet --report-build-failure`
+to have it run daily at 3 at night.
 
 
 ## ToDo
 ******************************************************************************
 Current list of tasks is:
 
-+ Publish gem to Gemcutter
 + Integrate with CIA.vc / Ruby-Rbot
 + Add tests
 + Refactor `#archive_for_revision` and `#dmg_for_revision` into a single method
 + Create a simple Sinatra App for [openMSX.FiXato.net][5]
 + Allow for automatic setup of the oAuth tokens.
-
++ Add documentation on the YAML configuration files.
 
 ## Notes on Patches/Pull Requests
 ******************************************************************************
