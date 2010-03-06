@@ -50,6 +50,7 @@ to have it run daily at 3 at night.
 ******************************************************************************
 Current list of tasks is:
 
++ Replace DebugTools with Log4r
 + Integrate with CIA.vc / Ruby-Rbot
 + Add tests
 + Refactor `#archive_for_revision` and `#dmg_for_revision` into a single method
