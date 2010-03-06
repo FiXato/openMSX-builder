@@ -1,12 +1,9 @@
 require 'rubygems'
 require 'mail'
 require 'yaml'
-require 'twitter_oauth'
 require 'tweet_msx'
-load 'debug_tools.rb'
-include DebugTools
+require 'logger'
 class OpenmsxBuilder
-  include DebugTools
   class NotConfigured < RuntimeError;end
   CONFIG_FILENAME = File.expand_path('~/.openMSX-builder.yaml')
   DEFAULTS = {
@@ -47,9 +44,16 @@ class OpenmsxBuilder
     @current_revision = `svnversion -n #{setting(:source_dir)}`.to_i
     @options = options
     @fails = 0
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::FATAL
+    @log.level = Logger::ERROR if @options.include?('--log-errors')
+    @log.level = Logger::WARN if @options.include?('--warn')
+    @log.level = Logger::INFO if @options.include?('--verbose')
+    @log.level = Logger::DEBUG if @options.include?('--debug')
+    @log.debug("Logger created with level #{@log.level}")
     config
   rescue NotConfigured => e
-    puts e.message
+    @log.fatal e.message
     exit
   end
 
@@ -80,10 +84,10 @@ class OpenmsxBuilder
       publish_current
       return
     end
-    debug "openMSX is currently at #{@current_revision}."
+    @log.info "openMSX is currently at #{@current_revision}."
     update_svn
     if @new_revision >= @current_revision
-      debug "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
+      @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
       build
     end
   end
@@ -96,30 +100,30 @@ private
   def dmg_for_revision?(revision)
     return false unless openmsx?
     files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-x86-bin.dmg"))
-    debug files.to_yaml unless files.size == 0
+    @log.debug files.to_yaml unless files.size == 0
     files.size > 0
   end
 
   def archive_for_revision?(revision)
     return false unless openmsx_debugger?
     filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
-    debug filename
+    @log.debug filename
     File.exist?(filename)
   end
 
   def publish_build(revision,infile,outfile='',location=setting(:publish_location))
-    debug ""
+    @log.debug "\n#publish_build"
     outfile = File.basename(infile) if outfile == ''
     destination = File.join(location,outfile)
-    debug "Will publish #{infile} to #{setting(:publish_location)} now."
+    @log.info "Will publish #{infile} to #{setting(:publish_location)} now."
     publish_output = `scp -p "#{infile}" #{destination}`
-    debug publish_output unless publish_output.nil? || publish_output.strip == ''
+    @log.debug publish_output unless publish_output.nil? || publish_output.strip == ''
     url = File.join(setting(:site_path),File.basename(destination))
     twitter_update = tweetmsx.update("[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}") if @options.include?('--tweet')
-    debug(twitter_update) unless twitter_update.nil?
+    @log.info(twitter_update) unless twitter_update.nil?
     nil
   rescue TweetMsx::NotConfigured => e
-    debug e.message
+    @log.error e.message
   end
 
   def publish
@@ -134,7 +138,7 @@ private
   end
 
   def publish_all
-    debug "Publishing all #{@type} builds found"
+    @log.info "Publishing all #{@type} builds found"
     if openmsx?
       files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-x86-bin.dmg")).sort.map do |f|
         if f =~ /openmsx-.+-(\d+)-mac-x86-bin.dmg$/
@@ -175,38 +179,38 @@ private
     if @options.include?('--dont-update')
       update = 'Update skipped'
     else
-      debug "Proceeding with update."
+      @log.info "Proceeding with update."
       update = `cd #{setting(:source_dir)} && svn up` 
     end
     @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
-    debug update
-    debug "Now at revision #{@new_revision}"
+    @log.debug update
+    @log.info "Now at revision #{@new_revision}"
     nil
   end
 
   def tweetmsx
-    @tweetmsx ||= TweetMsx.new
+    @tweetmsx ||= TweetMsx.new(@log.level)
   end
 
   def build
     if openmsx?
       if dmg_for_revision?(@new_revision)
-        debug "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-x86-bin.dmg")).first}"
+        @log.info "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-x86-bin.dmg")).first}"
         return nil
       end
       cleanup_dmg_locks
     elsif openmsx_debugger?
       if archive_for_revision?(@new_revision)
-        debug "Revision already build as #{File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")}"
+        @log.info "Revision already build as #{File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")}"
         return nil
       end
     end
-    debug("Will attempt to build revision #{@new_revision}.")
+    @log.info("Will attempt to build revision #{@new_revision}.")
     build_output = `cd #{setting(:source_dir)} && make clean && make #{'staticbindist' if openmsx?} 2>&1`
     if $?.success?
-      debug "++++++SUCCESS++++++"
+      @log.info "++++++SUCCESS++++++"
       build_output.each_line do |line|
-        debug "     %s" % line
+        @log.debug "     %s" % line
       end
       publish if @options.include?('--publish')
       nil
@@ -214,17 +218,18 @@ private
       #Capture the weird random build error that seems to be more OSX related than openMSX related.
       if build_output.include?('hdiutil: create failed - error 49168')
         @fails += 1
-        debug build_output
-        debug "Weird bug (attempt #{@fails}/3)"
+        @log.error build_output
+        @log.error "Weird bug (attempt #{@fails}/3)"
         if @fails == 3
+          @log.fatal "Encountered the weird 'hdiutil error 49168'-bug #{@fails} times; failing."
           exit
         else
           return build
         end
       end
-      debug "!!!!!!FAILED!!!!!!"
+      @log.error "!!!!!!FAILED!!!!!!"
       build_output.each_line do |line|
-        debug "     %s" % line
+        @log.error "     %s" % line
       end
       if @options.include?('--report-build-failure')
         report_build_failure(build_output)
@@ -234,13 +239,14 @@ private
   end
 
   def cleanup_dmg_locks
-    debug("Checking for existing filelocks on DMGs.")
+    @log.info("Checking for existing filelocks on DMGs.")
     locks = `/usr/sbin/lsof | grep #{@new_revision}-mac-x86-bin.dmg`
-    debug locks
+    @log.debug locks
     locks.each_line do |lock_line|
       pid = lock_line.split[1].to_i
-      debug "Killing pid #{pid} from lock '#{lock_line}'"
-      `kill -9 #{pid}`
+      @log.info "Killing pid #{pid} from lock '#{lock_line}'"
+      kill_output = `kill -9 #{pid}`
+      @log.debug kill_output
     end
   end
 
@@ -251,10 +257,10 @@ private
     smtp_settings = config[:smtp_settings]
     mail_from = setting(:report_from)
     mail_bcc = setting(:report_bcc)
-    Mail.defaults do
+    @log.debug Mail.defaults do
       delivery_method :smtp, smtp_settings
     end
-    Mail.deliver do
+    @log.debug Mail.deliver do
       from mail_from
         to mail_from
         bcc mail_bcc.join(', ')

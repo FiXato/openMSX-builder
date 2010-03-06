@@ -25,9 +25,8 @@ Set up of the oauth info has to be done manually at the moment, for more informa
 
 ### Commandline Arguments
 
-Currently `build_openmsx` supports the following commandline arguments:
+Currently `build_openmsx` supports the following command-line arguments:
 
-* --debug                 => Generate debug output.
 * --publish               => Publish the created build
 * --publish-current       => Only publish the current build and exit
 * --publish-all           => Only publish all previously created builds and exit
@@ -35,13 +34,21 @@ Currently `build_openmsx` supports the following commandline arguments:
 * --dont-update           => Don't update the SVN repository
 * --report-build-failure  => If an error occurs during build, report failure via e-mail
 
+By default only fatal errors will be output via STDOUT.
+However, the following command-line arguments are available to set the verbosity:
+
+* --log-errors            => Fatal and non-fatal errors.
+* --warn                  => Logs warnings besides the (non-)fatal errors.
+* --verbose               => Besides the --warn output, also outputs info.
+* --debug                 => Most verbose form. --verbose plus debug info.
+
 ### Examples
 
 Simplest way to run it would usually be:
-`build_openmsx --debug --publish --tweet --report-build-failure`
+`build_openmsx --verbose --publish --tweet --report-build-failure`
 
 Or by adding a cronjob for:
-`0 3 * * * build_openmsx --publish --tweet --report-build-failure`
+`0 3 * * * build_openmsx --publish --tweet --report-build-failure --log-errors`
 to have it run daily at 3 at night.
 (Remember to add either `source ~/.profile` or the right PATH to your cron.)
 
@@ -50,7 +57,6 @@ to have it run daily at 3 at night.
 ******************************************************************************
 Current list of tasks is:
 
-+ Replace DebugTools with Log4r
 + Integrate with CIA.vc / Ruby-Rbot
 + Add tests
 + Refactor `#archive_for_revision` and `#dmg_for_revision` into a single method

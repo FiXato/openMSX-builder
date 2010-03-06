@@ -1,4 +1,6 @@
-load 'debug_tools.rb'
+require 'logger'
+require 'twitter_oauth'
+require 'yaml'
 # Patch for Ruby 1.9.2
 module Net
   module HTTPHeader
@@ -10,7 +12,6 @@ module Net
   end
 end
 class TweetMsx
-  include DebugTools
   class NotConfigured < RuntimeError;end
   CONFIG_FILENAME = File.expand_path('~/.openMSX-builder-TweetMSX.yaml')
   DEFAULTS = {
@@ -22,35 +23,42 @@ class TweetMsx
     }
   }
   attr_reader :client, :twitter_down
-  def initialize
+  def initialize(log_level=Logger::FATAL)
     @client = TwitterOAuth::Client.new(config[:client])
+    @log = Logger.new(STDOUT)
+    @log.level = log_level
   end
 
   def config
     create_default_config unless File.exist?(CONFIG_FILENAME)
     @config ||= YAML.load_file(CONFIG_FILENAME)
-    raise NotConfigured.new("You need to set up your config file at #{CONFIG_FILENAME} first") if @config == DEFAULTS
+    @log.debug @config.to_yaml
+    if @config == DEFAULTS
+      @log.error "TweetMSX config at #{CONFIG_FILENAME} matches DEFAULTS"
+      raise NotConfigured.new("You need to set up your config file at #{CONFIG_FILENAME} first")
+    end
     @config
   end
 
   def create_default_config
     system("mkdir -p #{File.dirname(CONFIG_FILENAME)}")
+    @log.debug "Creating default config at #{CONFIG_FILENAME}"
     File.open(CONFIG_FILENAME,'w') do |f|
       f.write DEFAULTS.to_yaml
     end
   end
 
   def update(message)
-    debug "#{message} [#{message.size} chars]"
+    @log.info "Tweeting message:\n #{message}"
+    @log.debug "[#{message.size} characters]"
     if @client.rate_limit_status == 0
-      debug "You've exceeded your rate limit"
+      @log.error "You've exceeded your rate limit"
       return nil
     end
-    puts message.to_yaml
     @client.update(message.to_s)
     nil
   rescue SocketError
-    debug "Could not send '#{message}'. Twitter or your connection might be down."
+    @log.error "Could not send '#{message}'. Twitter or your connection might be down."
     nil
   end
 end
