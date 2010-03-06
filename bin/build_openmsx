@@ -8,7 +8,14 @@
 # --tweet                 => Send a tweet via @openMSX_Builder after successfully having published a build
 # --dont-update           => Don't update the SVN repository
 # --report-build-failure  => If an error occurs during build, report failure via e-mail
+# --version               => Return the current version of openMSX-Builder
 require 'openmsx_builder'
+
+if ARGV.include?('--version')
+  puts File.read(File.expand_path(File.join(File.dirname(__FILE__),'..','VERSION')))
+  exit
+end
+
 debug('-'*50)
 debug("Starting with openMSX")
 OpenmsxBuilder.new(ARGV,:openmsx).run
