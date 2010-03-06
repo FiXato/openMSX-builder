@@ -1,4 +1,10 @@
+require 'rubygems'
+require 'mail'
+require 'yaml'
+require 'twitter_oauth'
+require 'tweet_msx'
 load 'debug_tools.rb'
+include DebugTools
 class OpenmsxBuilder
   include DebugTools
   class NotConfigured < RuntimeError;end

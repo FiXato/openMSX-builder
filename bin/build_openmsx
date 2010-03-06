@@ -8,15 +8,7 @@
 # --tweet                 => Send a tweet via @openMSX_Builder after successfully having published a build
 # --dont-update           => Don't update the SVN repository
 # --report-build-failure  => If an error occurs during build, report failure via e-mail
-require 'rubygems'
-require 'mail'
-require 'yaml'
-require 'twitter_oauth'
-load 'debug_tools.rb'
-require 'tweet_msx'
 require 'openmsx_builder'
-include DebugTools
-
 debug('-'*50)
 debug("Starting with openMSX")
 OpenmsxBuilder.new(ARGV,:openmsx).run
