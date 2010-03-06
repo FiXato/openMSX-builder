@@ -1,4 +1,4 @@
-load 'lib/debug_tools.rb'
+load 'debug_tools.rb'
 # Patch for Ruby 1.9.2
 module Net
   module HTTPHeader

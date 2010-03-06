@@ -1,4 +1,4 @@
-load 'lib/debug_tools.rb'
+load 'debug_tools.rb'
 class OpenmsxBuilder
   include DebugTools
   class NotConfigured < RuntimeError;end

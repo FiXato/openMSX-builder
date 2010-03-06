@@ -12,9 +12,9 @@ require 'rubygems'
 require 'mail'
 require 'yaml'
 require 'twitter_oauth'
-load './lib/debug_tools.rb'
-require './lib/tweet_msx'
-require './lib/openmsx_builder'
+load 'debug_tools.rb'
+require 'tweet_msx'
+require 'openmsx_builder'
 include DebugTools
 
 debug('-'*50)
