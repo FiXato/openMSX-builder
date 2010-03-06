@@ -16,9 +16,16 @@ if ARGV.include?('--version')
   exit
 end
 
-debug('-'*50)
-debug("Starting with openMSX")
+# TODO: Refactor this into OpenmsxBuilder; perhaps make @options a class variable.
+log = Logger.new(STDOUT)
+log.level = Logger::FATAL
+log.level = Logger::ERROR if ARGV.include?('--log-errors')
+log.level = Logger::WARN if ARGV.include?('--warn')
+log.level = Logger::INFO if ARGV.include?('--verbose')
+log.level = Logger::DEBUG if ARGV.include?('--debug')
+log.info('-'*50)
+log.info("Starting with openMSX")
 OpenmsxBuilder.new(ARGV,:openmsx).run
-debug('-'*50)
-debug("Proceeding with openMSX-Debugger")
+log.info('-'*50)
+log.info("Proceeding with openMSX-Debugger")
 OpenmsxBuilder.new(ARGV,:openmsx_debugger).run
