@@ -33,6 +33,7 @@ Currently `build_openmsx` supports the following command-line arguments:
 * --tweet                 => Send a tweet via configured authorised Twitter account after successfully having published a build
 * --dont-update           => Don't update the SVN repository
 * --report-build-failure  => If an error occurs during build, report failure via e-mail
+* --version               => Return the current VERSION of openMSX-Builder
 
 By default only fatal errors will be output via STDOUT.
 However, the following command-line arguments are available to set the verbosity:
