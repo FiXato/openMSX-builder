@@ -24,9 +24,9 @@ class TweetMsx
   }
   attr_reader :client, :twitter_down
   def initialize(log_level=Logger::FATAL)
-    @client = TwitterOAuth::Client.new(config[:client])
     @log = Logger.new(STDOUT)
     @log.level = log_level
+    @client = TwitterOAuth::Client.new(config[:client])
   end
 
   def config
