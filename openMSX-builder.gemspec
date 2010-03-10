@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{openMSX-builder}
-  s.version = "1.3.2"
+  s.version = "1.3.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Filip H.F. \"FiXato\" Slagter"]
-  s.date = %q{2010-03-07}
+  s.date = %q{2010-03-11}
   s.default_executable = %q{build_openmsx}
   s.description = %q{openMSX-Builder is used for building the latest SVN checkouts of openMSX and openMSX-Debugger from their sourceforge repository.
     It also supports publishing the created builds to an external location via scp, announcing successfully published builds via Twitter and reporting build-errors via e-mail.}
