@@ -70,14 +70,14 @@ Current list of tasks is:
 ## Notes on Patches/Pull Requests
 ******************************************************************************
 
-1 Fork the project.
-2 Make your feature addition or bug fix.
-3 Add tests for it (even though I don't have tests myself at the moment). 
+1. Fork the project.
+2. Make your feature addition or bug fix.
+3. Add tests for it (even though I don't have tests myself at the moment). 
   This is important so I don't break it in a future version unintentionally.
-4 Commit, but do not mess with Rakefile, version, history, or README.
+4. Commit, but do not mess with Rakefile, version, history, or README.
   Want to have your own version? Bump version in a separate commit!
   That way I can ignored that commit when I pull.
-5 Send me a pull request. Bonus points for topic branches.
+5. Send me a pull request. Bonus points for topic branches.
 
 
 ## Copyright
