@@ -206,7 +206,7 @@ private
       end
     end
     @log.info("Will attempt to build revision #{@new_revision}.")
-    build_output = `cd #{setting(:source_dir)} && OPENMSX_TARGET_CPU=univ make clean && OPENMSX_TARGET_CPU=univ make #{'staticbindist' if openmsx?} 2>&1`
+    build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist' if openmsx?} OPENMSX_TARGET_CPU=univ 2>&1`
     if $?.success?
       @log.info "++++++SUCCESS++++++"
       build_output.each_line do |line|
