@@ -199,7 +199,7 @@ private
   end
 
   def build
-    return nil if filename = already_built?(@new_revision)
+    return nil if already_built?(@new_revision)
     cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
     build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
