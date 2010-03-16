@@ -40,11 +40,6 @@ class OpenmsxBuilder
 
   attr_accessor :type,:build_outputs
   def initialize(options,type=:openmsx)
-    @type = type
-    @current_revision = `svnversion -n #{setting(:source_dir)}`.to_i
-    @options = options
-    @fails = 0
-    @build_outputs = []
     @log = Logger.new(STDOUT)
     @log.level = Logger::FATAL
     @log.level = Logger::ERROR if @options.include?('--log-errors')
@@ -52,6 +47,11 @@ class OpenmsxBuilder
     @log.level = Logger::INFO if @options.include?('--verbose')
     @log.level = Logger::DEBUG if @options.include?('--debug')
     @log.debug("Logger created with level #{@log.level}")
+    @type = type
+    @current_revision = `svnversion -n #{setting(:source_dir)}`.to_i
+    @options = options
+    @fails = 0
+    @build_outputs = []
     config
   rescue NotConfigured => e
     @log.fatal e.message
