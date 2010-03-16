@@ -88,7 +88,7 @@ class OpenmsxBuilder
     update_svn
     if @new_revision >= @current_revision
       @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
-      build
+      build unless already_built?(@new_revision)
     end
   end
 
@@ -199,7 +199,6 @@ private
   end
 
   def build
-    return nil if already_built?(@new_revision)
     cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
     build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
