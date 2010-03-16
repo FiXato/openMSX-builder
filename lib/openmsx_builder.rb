@@ -77,24 +77,13 @@ class OpenmsxBuilder
   end
 
   def run
-    if @options.include?('--publish-all')
-      publish_all
-      return
-    end
-    if @options.include?('--publish-current')
-      publish_current
-      return
-    end
-    @log.info "openMSX is currently at #{@current_revision}."
+    return publish_all if @options.include?('--publish-all')
+    return publish_revision(@current_revision) if @options.include?('--publish-current')
     update_svn
     if @new_revision >= @current_revision
       @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
       build unless already_built?(@new_revision)
     end
-  end
-
-  def publish
-    publish_revision(@new_revision)
   end
 
   def publish_all
@@ -104,36 +93,51 @@ class OpenmsxBuilder
     elsif openmsx_debugger?
       regexp = /openMSX-debugger-(\d+)-mac-x86.tbz$/
     end
-    Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-univ-bin.dmg")).sort.map do |file|
-      rev = (file =~ regexp ? $1 : 'unknown')
-      publish_build(rev,file)
+    Dir.glob(filemask_for_revision('*')).sort.each do |file|
+      publish_revision($1,file) if file =~ regexp
     end
     nil
   end
 
-  def publish_current
-    publish_revision(@current_revision)
-  end
-
-  def publish_revision(revision)
-    if openmsx?
-      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")).first
-    elsif openmsx_debugger?
-      archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
-      archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
+  def publish_revision(revision,archive_name=nil)
+    if archive_name.nil?
+      if openmsx?
+        archive_name = Dir.glob(filemask_for_revision(revision)).first
+      elsif openmsx_debugger?
+        archive_name = filemask_for_revision(revision)
+        archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
+      end
     end
-    publish_build(revision, archive_name)
-    nil
+
+    destination = File.join(setting(:publish_location),File.basename(archive_name))
+    @log.info "Publishing '#{archive_name}' to '#{destination}'."
+    @log.debug `scp -p "#{archive_name}" #{destination}`
+
+    return nil unless @options.include?('--tweet')
+    url = File.join(setting(:site_path),File.basename(archive_name))
+    message = "[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}"
+    tweetmsx.update(message)
+  rescue TweetMsx::NotConfigured => e
+    @log.error e.message
   end
 
 private
+
+  def filemask_for_revision(revision)
+    if openmsx?
+      File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")
+    elsif openmsx_debugger?
+      File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+    end
+  end
+
   def archive(infile,outfile)
     `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
   end
 
   def already_built?(revision)
     if openmsx?
-      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
+      files = Dir.glob(filemask_for_revision(revision))
       if files.size == 0
         @log.debug "Revision #{revision} has not yet been built."
         return false
@@ -141,7 +145,7 @@ private
       @log.debug "The following file(s) were found for revision #{revision}: #{files.join(",")}"
       filename = files.first
     elsif openmsx_debugger?
-      filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+      filename = filemask_for_revision(revision)
       return false unless File.exist?(filename)
     else
       @log.fatal "Unsupported config type #{@type}."
@@ -149,21 +153,6 @@ private
     end
     @log.verbose "Revision #{revision} already built as: #{filename}"
     filename
-  end
-
-  def publish_build(revision,infile,outfile='',location=setting(:publish_location))
-    @log.debug "\n#publish_build"
-    outfile = File.basename(infile) if outfile == ''
-    destination = File.join(location,outfile)
-    @log.info "Will publish #{infile} to #{setting(:publish_location)} now."
-    publish_output = `scp -p "#{infile}" #{destination}`
-    @log.debug publish_output unless publish_output.nil? || publish_output.strip == ''
-    url = File.join(setting(:site_path),File.basename(destination))
-    twitter_update = tweetmsx.update("[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}") if @options.include?('--tweet')
-    @log.info(twitter_update) unless twitter_update.nil?
-    nil
-  rescue TweetMsx::NotConfigured => e
-    @log.error e.message
   end
   
   def update_svn
@@ -202,7 +191,7 @@ private
         @log.debug "     %s" % line
       end
     end
-    publish if @options.include?('--publish')
+    publish_revision(@new_revision) if @options.include?('--publish')
     nil
   end
 
