@@ -56,7 +56,7 @@ class TweetMsx
       return nil
     end
     ret = @client.update(message.to_s)
-    @log.info(ret) unless ret.nil?
+    @log.info(ret.to_yaml) unless ret.nil?
     nil
   rescue SocketError
     @log.error "Could not send '#{message}'. Twitter or your connection might be down."
