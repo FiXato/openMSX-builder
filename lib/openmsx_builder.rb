@@ -213,18 +213,7 @@ private
       publish if @options.include?('--publish')
       nil
     else
-      #Capture the weird random build error that seems to be more OSX related than openMSX related.
-      if build_output.include?('hdiutil: create failed - error 49168')
-        @fails += 1
-        @log.error build_output
-        @log.error "Weird bug (attempt #{@fails}/3)"
-        if @fails == 3
-          @log.fatal "Encountered the weird 'hdiutil error 49168'-bug #{@fails} times; failing."
-          exit
-        else
-          return build
-        end
-      end
+      return build if handle_hdiutil_error?(build_output)
       @log.error "!!!!!!FAILED!!!!!!"
       build_output.each_line do |line|
         @log.error "     %s" % line
@@ -234,6 +223,17 @@ private
       end
     end
     nil
+  end
+
+  #Capture the weird random build error that seems to be more OSX related than openMSX related.
+  def handle_hdiutil_error?(build_output)
+    return false unless build_output.include?('hdiutil: create failed - error 49168')
+    @fails += 1
+    @log.error build_output
+    @log.error "Weird bug (attempt #{@fails}/3)"
+    return true if @fails < 3
+    @log.fatal "Encountered the weird 'hdiutil error 49168'-bug #{@fails} times; failing."
+    exit
   end
 
   def cleanup_dmg_locks
