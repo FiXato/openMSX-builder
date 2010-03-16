@@ -65,6 +65,9 @@ Current list of tasks is:
 + Add documentation on the YAML configuration files.
 + Add --configure argument that will trigger set up of the configuration files.
 + See if VERSION can be integrated into OpenmsxBuilder instead of just being parsed in the executable.
++ Add support for releasing both universal build and x86 builds.
++ Make sure all shell commands are output as Debug level logs.
++ Integrate CBIOS builds.
 
 ## Notes on Patches/Pull Requests
 ******************************************************************************
@@ -75,7 +78,7 @@ Current list of tasks is:
   This is important so I don't break it in a future version unintentionally.
 4. Commit, but do not mess with Rakefile, version, history, or README.
   Want to have your own version? Bump version in a separate commit!
-  That way I can ignored that commit when I pull.
+  That way I can ignore that commit when I pull.
 5. Send me a pull request. Bonus points for topic branches.
 
 
