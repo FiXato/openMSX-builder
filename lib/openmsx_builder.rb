@@ -94,14 +94,7 @@ class OpenmsxBuilder
   end
 
   def publish
-    if openmsx?
-      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-univ-bin.dmg")).first
-    elsif openmsx_debugger?
-      archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")
-      archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
-    end
-    publish_build(@new_revision, archive_name)
-    nil
+    publish_revision(@new_revision)
   end
 
   def publish_all
@@ -130,15 +123,19 @@ class OpenmsxBuilder
     end
     nil
   end
-  
+
   def publish_current
+    publish_revision(@current_revision)
+  end
+
+  def publish_revision(revision)
     if openmsx?
-      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@current_revision}-mac-univ-bin.dmg")).first
+      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")).first
     elsif openmsx_debugger?
-      archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@current_revision}-mac-x86.tbz")
+      archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
       archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
     end
-    publish_build(@current_revision, archive_name)
+    publish_build(revision, archive_name)
     nil
   end
 
