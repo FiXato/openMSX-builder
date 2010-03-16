@@ -72,20 +72,6 @@ class OpenmsxBuilder
     end
   end
 
-  def setting(key)
-    config[:projects][type][key]
-  end
-
-  def run
-    return publish_all if @options.include?('--publish-all')
-    return publish_revision(@current_revision) if @options.include?('--publish-current')
-    update_svn
-    if @new_revision >= @current_revision
-      @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
-      build unless already_built?(@new_revision)
-    end
-  end
-
   def publish_all
     @log.info "Publishing all #{@type} builds found"
     if openmsx?
@@ -121,20 +107,21 @@ class OpenmsxBuilder
     @log.error e.message
   end
 
-private
+  def setting(key)
+    config[:projects][type][key]
+  end
 
-  def filemask_for_revision(revision)
-    if openmsx?
-      File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")
-    elsif openmsx_debugger?
-      File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+  def run
+    return publish_all if @options.include?('--publish-all')
+    return publish_revision(@current_revision) if @options.include?('--publish-current')
+    update_svn
+    if @new_revision >= @current_revision
+      @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
+      build unless already_built?(@new_revision)
     end
   end
 
-  def archive(infile,outfile)
-    `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
-  end
-
+private
   def already_built?(revision)
     if openmsx?
       files = Dir.glob(filemask_for_revision(revision))
@@ -154,23 +141,9 @@ private
     @log.verbose "Revision #{revision} already built as: #{filename}"
     filename
   end
-  
-  def update_svn
-    if @options.include?('--dont-update')
-      @new_revision = @current_revision
-      @log.info "Update skipped. Still at revision #{@new_revision}"
-      return
-    end
 
-    @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
-    @log.debug `cd #{setting(:source_dir)} && svn up`
-    @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
-    @log.info "Now at revision #{@new_revision}"
-    nil
-  end
-
-  def tweetmsx
-    @tweetmsx ||= TweetMsx.new(@log.level)
+  def archive(infile,outfile)
+    `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
   end
 
   def build
@@ -185,37 +158,8 @@ private
     nil
   end
 
-  def handle_build_success
-    @log.info "++++++SUCCESS++++++"
-    if @log.debug?
-      build_output.each_line do |line|
-        @log.debug "     %s" % line
-      end
-    end
-    publish_revision(@new_revision) if @options.include?('--publish')
-    nil
-  end
-
-  def handle_build_error
-    build && return nil if handle_hdiutil_error?
-    @log.error "!!!!!!FAILED!!!!!!"
-    build_output.each_line do |line|
-      @log.error "     %s" % line
-    end
-    if @options.include?('--report-build-failure')
-      report_build_failure
-    end
-  end
-
-  #Capture the weird random build error that seems to be more OSX related than openMSX related.
-  def handle_hdiutil_error?
-    return false unless build_output.include?('hdiutil: create failed - error 49168')
-    @fails += 1
-    @log.error build_output
-    @log.error "Weird bug (attempt #{@fails}/3)"
-    return true if @fails < 3
-    @log.fatal "Encountered the weird 'hdiutil error 49168'-bug #{@fails} times; failing."
-    exit
+  def build_output
+    build_outputs.last
   end
 
   def cleanup_dmg_locks
@@ -228,6 +172,55 @@ private
       kill_output = `kill -9 #{pid}`
       @log.debug kill_output
     end
+  end
+
+  def filemask_for_revision(revision)
+    if openmsx?
+      File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")
+    elsif openmsx_debugger?
+      File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+    end
+  end
+
+  def handle_build_error
+    build && return nil if handle_build_hdiutil_error?
+    @log.error "!!!!!!FAILED!!!!!!"
+    build_output.each_line do |line|
+      @log.error "     %s" % line
+    end
+    if @options.include?('--report-build-failure')
+      report_build_failure
+    end
+  end
+
+  #Capture the weird random build error that seems to be more OSX related than openMSX related.
+  def handle_build_hdiutil_error?
+    return false unless build_output.include?('hdiutil: create failed - error 49168')
+    @fails += 1
+    @log.error build_output
+    @log.error "Weird bug (attempt #{@fails}/3)"
+    return true if @fails < 3
+    @log.fatal "Encountered the weird 'hdiutil error 49168'-bug #{@fails} times; failing."
+    exit
+  end
+
+  def handle_build_success
+    @log.info "++++++SUCCESS++++++"
+    if @log.debug?
+      build_output.each_line do |line|
+        @log.debug "     %s" % line
+      end
+    end
+    publish_revision(@new_revision) if @options.include?('--publish')
+    nil
+  end
+
+  def openmsx?
+    @type == :openmsx
+  end
+
+  def openmsx_debugger?
+    @type == :openmsx_debugger
   end
 
   def report_build_failure
@@ -255,15 +248,21 @@ private
     end
   end
 
-  def openmsx?
-    @type == :openmsx
+  def tweetmsx
+    @tweetmsx ||= TweetMsx.new(@log.level)
   end
 
-  def openmsx_debugger?
-    @type == :openmsx_debugger
-  end
+  def update_svn
+    if @options.include?('--dont-update')
+      @new_revision = @current_revision
+      @log.info "Update skipped. Still at revision #{@new_revision}"
+      return
+    end
 
-  def build_output
-    build_outputs.last
+    @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
+    @log.debug `cd #{setting(:source_dir)} && svn up`
+    @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
+    @log.info "Now at revision #{@new_revision}"
+    nil
   end
 end
