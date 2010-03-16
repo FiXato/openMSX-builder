@@ -97,18 +97,24 @@ private
     `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
   end
 
-  def dmg_for_revision?(revision)
-    return false unless openmsx?
-    files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
-    @log.debug files.to_yaml unless files.size == 0
-    files.size > 0
-  end
-
-  def archive_for_revision?(revision)
-    return false unless openmsx_debugger?
-    filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
-    @log.debug filename
-    File.exist?(filename)
+  def already_built?(revision)
+    if openmsx?
+      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
+      if files.size == 0
+        @log.debug "Revision #{revision} has not yet been built."
+        return false
+      end
+      @log.debug "The following file(s) were found for revision #{revision}: #{files.join(",")}"
+      filename = files.first
+    elsif openmsx_debugger?
+      filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+      return false unless File.exist?(filename)
+    else
+      @log.fatal "Unsupported config type #{@type}."
+      exit
+    end
+    @log.verbose "Revision #{revision} already built as: #{filename}"
+    filename
   end
 
   def publish_build(revision,infile,outfile='',location=setting(:publish_location))
@@ -193,18 +199,8 @@ private
   end
 
   def build
-    if openmsx?
-      if dmg_for_revision?(@new_revision)
-        @log.info "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-univ-bin.dmg")).first}"
-        return nil
-      end
-      cleanup_dmg_locks
-    elsif openmsx_debugger?
-      if archive_for_revision?(@new_revision)
-        @log.info "Revision already build as #{File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")}"
-        return nil
-      end
-    end
+    return nil if filename = already_built?(@new_revision)
+    cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
     build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
     if $?.success?

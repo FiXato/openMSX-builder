@@ -60,7 +60,6 @@ Current list of tasks is:
 
 + Integrate with CIA.vc / Ruby-Rbot
 + Add tests
-+ Refactor `#archive_for_revision` and `#dmg_for_revision` into a single method
 + Create a simple Sinatra App for [openMSX.FiXato.net][5]
 + Allow for automatic setup of the oAuth tokens.
 + Add documentation on the YAML configuration files.
