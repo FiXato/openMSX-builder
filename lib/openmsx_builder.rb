@@ -204,24 +204,28 @@ private
     @log.info("Will attempt to build revision #{@new_revision}.")
     build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
     if $?.success?
-      @log.info "++++++SUCCESS++++++"
-      if @log.debug?
-        build_output.each_line do |line|
-          @log.debug "     %s" % line
-        end
-      end
-      publish if @options.include?('--publish')
-      nil
-    else
-      return build if handle_hdiutil_error?(build_output)
-      @log.error "!!!!!!FAILED!!!!!!"
+      handle_build_success(build_output)
+      return nil
+    end
+    build if handle_hdiutil_error?(build_output)
+    @log.error "!!!!!!FAILED!!!!!!"
+    build_output.each_line do |line|
+      @log.error "     %s" % line
+    end
+    if @options.include?('--report-build-failure')
+      report_build_failure(build_output)
+    end
+    nil
+  end
+
+  def handle_build_success(build_output)
+    @log.info "++++++SUCCESS++++++"
+    if @log.debug?
       build_output.each_line do |line|
-        @log.error "     %s" % line
-      end
-      if @options.include?('--report-build-failure')
-        report_build_failure(build_output)
+        @log.debug "     %s" % line
       end
     end
+    publish if @options.include?('--publish')
     nil
   end
 
