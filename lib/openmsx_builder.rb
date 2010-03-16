@@ -93,46 +93,6 @@ class OpenmsxBuilder
     end
   end
 
-private
-  def archive(infile,outfile)
-    `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
-  end
-
-  def already_built?(revision)
-    if openmsx?
-      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
-      if files.size == 0
-        @log.debug "Revision #{revision} has not yet been built."
-        return false
-      end
-      @log.debug "The following file(s) were found for revision #{revision}: #{files.join(",")}"
-      filename = files.first
-    elsif openmsx_debugger?
-      filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
-      return false unless File.exist?(filename)
-    else
-      @log.fatal "Unsupported config type #{@type}."
-      exit
-    end
-    @log.verbose "Revision #{revision} already built as: #{filename}"
-    filename
-  end
-
-  def publish_build(revision,infile,outfile='',location=setting(:publish_location))
-    @log.debug "\n#publish_build"
-    outfile = File.basename(infile) if outfile == ''
-    destination = File.join(location,outfile)
-    @log.info "Will publish #{infile} to #{setting(:publish_location)} now."
-    publish_output = `scp -p "#{infile}" #{destination}`
-    @log.debug publish_output unless publish_output.nil? || publish_output.strip == ''
-    url = File.join(setting(:site_path),File.basename(destination))
-    twitter_update = tweetmsx.update("[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}") if @options.include?('--tweet')
-    @log.info(twitter_update) unless twitter_update.nil?
-    nil
-  rescue TweetMsx::NotConfigured => e
-    @log.error e.message
-  end
-
   def publish
     if openmsx?
       archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-univ-bin.dmg")).first
@@ -180,6 +140,46 @@ private
     end
     publish_build(@current_revision, archive_name)
     nil
+  end
+
+private
+  def archive(infile,outfile)
+    `cd #{File.dirname(infile)} && tar --bzip2 -cf #{outfile} #{File.basename(infile)}`
+  end
+
+  def already_built?(revision)
+    if openmsx?
+      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
+      if files.size == 0
+        @log.debug "Revision #{revision} has not yet been built."
+        return false
+      end
+      @log.debug "The following file(s) were found for revision #{revision}: #{files.join(",")}"
+      filename = files.first
+    elsif openmsx_debugger?
+      filename = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+      return false unless File.exist?(filename)
+    else
+      @log.fatal "Unsupported config type #{@type}."
+      exit
+    end
+    @log.verbose "Revision #{revision} already built as: #{filename}"
+    filename
+  end
+
+  def publish_build(revision,infile,outfile='',location=setting(:publish_location))
+    @log.debug "\n#publish_build"
+    outfile = File.basename(infile) if outfile == ''
+    destination = File.join(location,outfile)
+    @log.info "Will publish #{infile} to #{setting(:publish_location)} now."
+    publish_output = `scp -p "#{infile}" #{destination}`
+    @log.debug publish_output unless publish_output.nil? || publish_output.strip == ''
+    url = File.join(setting(:site_path),File.basename(destination))
+    twitter_update = tweetmsx.update("[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}") if @options.include?('--tweet')
+    @log.info(twitter_update) unless twitter_update.nil?
+    nil
+  rescue TweetMsx::NotConfigured => e
+    @log.error e.message
   end
   
   def update_svn
