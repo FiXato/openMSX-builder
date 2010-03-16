@@ -205,8 +205,10 @@ private
     build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
     if $?.success?
       @log.info "++++++SUCCESS++++++"
-      build_output.each_line do |line|
-        @log.debug "     %s" % line
+      if @log.debug?
+        build_output.each_line do |line|
+          @log.debug "     %s" % line
+        end
       end
       publish if @options.include?('--publish')
       nil
