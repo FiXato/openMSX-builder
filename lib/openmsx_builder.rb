@@ -38,12 +38,13 @@ class OpenmsxBuilder
     },
   }
 
-  attr_accessor :type
+  attr_accessor :type,:build_outputs
   def initialize(options,type=:openmsx)
     @type = type
     @current_revision = `svnversion -n #{setting(:source_dir)}`.to_i
     @options = options
     @fails = 0
+    @build_outputs = []
     @log = Logger.new(STDOUT)
     @log.level = Logger::FATAL
     @log.level = Logger::ERROR if @options.include?('--log-errors')
@@ -201,23 +202,23 @@ private
   def build
     cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
-    build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
+    @build_outputs << `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
     if $?.success?
-      handle_build_success(build_output)
+      handle_build_success
       return nil
     end
-    build if handle_hdiutil_error?(build_output)
+    build if handle_hdiutil_error?
     @log.error "!!!!!!FAILED!!!!!!"
     build_output.each_line do |line|
       @log.error "     %s" % line
     end
     if @options.include?('--report-build-failure')
-      report_build_failure(build_output)
+      report_build_failure
     end
     nil
   end
 
-  def handle_build_success(build_output)
+  def handle_build_success
     @log.info "++++++SUCCESS++++++"
     if @log.debug?
       build_output.each_line do |line|
@@ -229,7 +230,7 @@ private
   end
 
   #Capture the weird random build error that seems to be more OSX related than openMSX related.
-  def handle_hdiutil_error?(build_output)
+  def handle_hdiutil_error?
     return false unless build_output.include?('hdiutil: create failed - error 49168')
     @fails += 1
     @log.error build_output
@@ -251,7 +252,7 @@ private
     end
   end
 
-  def report_build_failure(build_output)
+  def report_build_failure
     #TODO: Find out why I have to set these local vars due to problems with scope within Mail
     revision = @new_revision
     project_name = setting(:nice_name)
@@ -268,15 +269,23 @@ private
       subject "[FAIL] #{project_name} revision #{revision} failed to build"
       content_type 'text/plain; charset=UTF-8'
       content_transfer_encoding '8bit'
-      body "While trying to build revision #{revision} of #{project_name}, the daily auto-builder encountered an error. Below you will find the entire build report:\r\n\r\n" << build_output
+      body <<-EOS
+        While trying to build revision #{revision} of #{project_name}, the daily auto-builder encountered an error.
+        Below you will find the entire build report:\r\n
+        #{build_output}
+      EOS
     end
   end
-  
+
   def openmsx?
     @type == :openmsx
   end
 
   def openmsx_debugger?
     @type == :openmsx_debugger
+  end
+
+  def build_output
+    build_outputs.last
   end
 end
