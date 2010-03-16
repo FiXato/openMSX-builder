@@ -100,25 +100,12 @@ class OpenmsxBuilder
   def publish_all
     @log.info "Publishing all #{@type} builds found"
     if openmsx?
-      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-univ-bin.dmg")).sort.map do |f|
-        if f =~ /openmsx-.+-(\d+)-mac-x86-bin.dmg$/
-          rev = $1
-        else
-          rev = 'unknown'
-        end
-        [rev,f]
-      end
+      regexp = /openmsx-.+-(\d+)-mac-univ-bin.dmg$/
     elsif openmsx_debugger?
-      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX-debugger-*-mac-x86.tbz')).sort.map do |f|
-        if f =~ /openMSX-debugger-(\d+)-mac-x86.tbz$/
-          rev = $1
-        else
-          rev = 'unknown'
-        end
-        [rev,f]
-      end
+      regexp = /openMSX-debugger-(\d+)-mac-x86.tbz$/
     end
-    files.each do |rev,file|
+    Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-univ-bin.dmg")).sort.map do |file|
+      rev = (file =~ regexp ? $1 : 'unknown')
       publish_build(rev,file)
     end
     nil
