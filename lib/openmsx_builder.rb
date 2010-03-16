@@ -10,7 +10,7 @@ class OpenmsxBuilder
     :projects => {
       :openmsx => {
         :source_dir => File.expand_path("~/Development/openMSX"),
-        :builds_subdir => 'derived/x86-darwin-opt-3rd',
+        :builds_subdir => 'derived/univ-darwin-opt-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
         :nice_name => 'openMSX',
@@ -99,7 +99,7 @@ private
 
   def dmg_for_revision?(revision)
     return false unless openmsx?
-    files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-x86-bin.dmg"))
+    files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg"))
     @log.debug files.to_yaml unless files.size == 0
     files.size > 0
   end
@@ -128,7 +128,7 @@ private
 
   def publish
     if openmsx?
-      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-x86-bin.dmg")).first
+      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-univ-bin.dmg")).first
     elsif openmsx_debugger?
       archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@new_revision}-mac-x86.tbz")
       archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
@@ -140,7 +140,7 @@ private
   def publish_all
     @log.info "Publishing all #{@type} builds found"
     if openmsx?
-      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-x86-bin.dmg")).sort.map do |f|
+      files = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-mac-univ-bin.dmg")).sort.map do |f|
         if f =~ /openmsx-.+-(\d+)-mac-x86-bin.dmg$/
           rev = $1
         else
@@ -166,7 +166,7 @@ private
   
   def publish_current
     if openmsx?
-      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@current_revision}-mac-x86-bin.dmg")).first
+      archive_name = Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@current_revision}-mac-univ-bin.dmg")).first
     elsif openmsx_debugger?
       archive_name = File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{@current_revision}-mac-x86.tbz")
       archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
@@ -195,7 +195,7 @@ private
   def build
     if openmsx?
       if dmg_for_revision?(@new_revision)
-        @log.info "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-x86-bin.dmg")).first}"
+        @log.info "Revision already build as #{Dir.glob(File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{@new_revision}-mac-univ-bin.dmg")).first}"
         return nil
       end
       cleanup_dmg_locks
@@ -206,7 +206,7 @@ private
       end
     end
     @log.info("Will attempt to build revision #{@new_revision}.")
-    build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist' if openmsx?} OPENMSX_TARGET_CPU=univ 2>&1`
+    build_output = `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
     if $?.success?
       @log.info "++++++SUCCESS++++++"
       build_output.each_line do |line|
@@ -240,7 +240,7 @@ private
 
   def cleanup_dmg_locks
     @log.info("Checking for existing filelocks on DMGs.")
-    locks = `/usr/sbin/lsof | grep #{@new_revision}-mac-x86-bin.dmg`
+    locks = `/usr/sbin/lsof | grep #{@new_revision}-mac-univ-bin.dmg`
     @log.debug locks
     locks.each_line do |lock_line|
       pid = lock_line.split[1].to_i
