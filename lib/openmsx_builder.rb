@@ -153,7 +153,7 @@ private
       @log.fatal "Unsupported config type #{@type}."
       exit
     end
-    @log.verbose "Revision #{revision} already built as: #{filename}"
+    @log.info "Revision #{revision} already built as: #{filename}"
     filename
   end
 
