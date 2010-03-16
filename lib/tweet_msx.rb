@@ -55,7 +55,8 @@ class TweetMsx
       @log.error "You've exceeded your rate limit"
       return nil
     end
-    @client.update(message.to_s)
+    ret = @client.update(message.to_s)
+    @log.info(ret) unless ret.nil?
     nil
   rescue SocketError
     @log.error "Could not send '#{message}'. Twitter or your connection might be down."
