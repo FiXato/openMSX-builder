@@ -207,14 +207,7 @@ private
       handle_build_success
       return nil
     end
-    build if handle_hdiutil_error?
-    @log.error "!!!!!!FAILED!!!!!!"
-    build_output.each_line do |line|
-      @log.error "     %s" % line
-    end
-    if @options.include?('--report-build-failure')
-      report_build_failure
-    end
+    handle_build_error
     nil
   end
 
@@ -227,6 +220,17 @@ private
     end
     publish if @options.include?('--publish')
     nil
+  end
+
+  def handle_build_error
+    build && return nil if handle_hdiutil_error?
+    @log.error "!!!!!!FAILED!!!!!!"
+    build_output.each_line do |line|
+      @log.error "     %s" % line
+    end
+    if @options.include?('--report-build-failure')
+      report_build_failure
+    end
   end
 
   #Capture the weird random build error that seems to be more OSX related than openMSX related.
