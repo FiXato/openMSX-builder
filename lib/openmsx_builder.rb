@@ -198,7 +198,10 @@ private
   end
 
   def handle_build_error
-    build && return nil if handle_build_hdiutil_error?
+    if handle_build_hdiutil_error?
+      build
+      return nil
+    end
     @log.error "!!!!!!FAILED!!!!!!"
     build_output.each_line do |line|
       @log.error "     %s" % line
