@@ -114,11 +114,26 @@ class OpenmsxBuilder
   def run
     return publish_all if @options.include?('--publish-all')
     return publish_revision(@current_revision) if @options.include?('--publish-current')
-    update_svn
+    if @options.include?('--dont-update')
+      @new_revision = @current_revision
+      @log.info "Update skipped. Still at revision #{@new_revision}"
+      return
+    else
+      update_svn
+    end
+
     if @new_revision >= @current_revision
       @log.info "Revision #{@new_revision} is not older than #{@current_revision}. Proceeding with build."
       build unless already_built?(@new_revision)
     end
+  end
+
+  def update_svn
+    @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
+    @log.debug `cd #{setting(:source_dir)} && svn up`
+    @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
+    @log.info "Now at revision #{@new_revision}"
+    nil
   end
 
 private
@@ -250,19 +265,5 @@ private
 
   def tweetmsx
     @tweetmsx ||= TweetMsx.new(@log.level)
-  end
-
-  def update_svn
-    if @options.include?('--dont-update')
-      @new_revision = @current_revision
-      @log.info "Update skipped. Still at revision #{@new_revision}"
-      return
-    end
-
-    @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
-    @log.debug `cd #{setting(:source_dir)} && svn up`
-    @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
-    @log.info "Now at revision #{@new_revision}"
-    nil
   end
 end
