@@ -157,13 +157,14 @@ private
   
   def update_svn
     if @options.include?('--dont-update')
-      update = 'Update skipped'
-    else
-      @log.info "Proceeding with update."
-      update = `cd #{setting(:source_dir)} && svn up` 
+      @new_revision = @current_revision
+      @log.info "Update skipped. Still at revision #{@new_revision}"
+      return
     end
+
+    @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
+    @log.debug `cd #{setting(:source_dir)} && svn up`
     @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
-    @log.debug update
     @log.info "Now at revision #{@new_revision}"
     nil
   end
