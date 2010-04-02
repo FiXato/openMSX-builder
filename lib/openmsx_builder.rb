@@ -13,9 +13,30 @@ class OpenmsxBuilder
         :builds_subdir => 'derived/univ-darwin-opt-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX',
+        :nice_name => 'openMSX (universal)',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'univ',
+      },
+      :openmsx_x86 => {
+        :source_dir => File.expand_path("~/Development/openMSX"),
+        :builds_subdir => 'derived/x86-darwin-opt-3rd',
+        :report_bcc => [],
+        :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
+        :nice_name => 'openMSX (x86)',
+        :publish_location => 'ssh_host:path/to/existing/publish/dir',
+        :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'x86',
+      },
+      :openmsx_ppc => {
+        :source_dir => File.expand_path("~/Development/openMSX"),
+        :builds_subdir => 'derived/ppc-darwin-opt-3rd',
+        :report_bcc => [],
+        :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
+        :nice_name => 'openMSX (ppc)',
+        :publish_location => 'ssh_host:path/to/existing/publish/dir',
+        :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'ppc',
       },
       :openmsx_debugger => {
         :source_dir => File.expand_path("~/Development/openmsx-debugger"),
@@ -164,7 +185,9 @@ private
   def build
     cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
-    @build_outputs << `cd #{setting(:source_dir)} && make clean OPENMSX_TARGET_CPU=univ && make #{'staticbindist OPENMSX_TARGET_CPU=univ' if openmsx?} 2>&1`
+    target_cpu=""
+    target_cpu=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if openmsx? && setting(:target_cpu)
+    @build_outputs << `cd #{setting(:source_dir)} && make clean && make #{"staticbindist#{target_cpu}"} 2>&1`
     if $?.success?
       handle_build_success
       return nil
