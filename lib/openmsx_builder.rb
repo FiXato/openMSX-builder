@@ -138,7 +138,6 @@ class OpenmsxBuilder
     if @options.include?('--dont-update')
       @new_revision = @current_revision
       @log.info "Update skipped. Still at revision #{@new_revision}"
-      return
     else
       update_svn
     end
