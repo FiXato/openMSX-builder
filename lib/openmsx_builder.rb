@@ -189,6 +189,8 @@ private
     if openmsx? 
       build_args+=" staticbindist"
       build_args+=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if setting(:target_cpu)
+    elsif openmsx_debugger?
+      build_args+=" CHANGELOG_REVISION=#{@new_revision}"
     end
     @build_outputs << `cd #{setting(:source_dir)} && make clean && make#{"#{build_args}"} 2>&1`
     if $?.success?
