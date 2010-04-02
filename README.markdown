@@ -58,6 +58,8 @@ to have it run daily at 3 at night.
 ******************************************************************************
 Current list of tasks is:
 
++ Fix failed-build-mailer for Ruby 1.9
+    "mail-2.1.3/lib/mail/mail.rb:106:in `instance_eval': block not supplied (ArgumentError)"
 + Integrate with CIA.vc / Ruby-Rbot
 + Add tests
 + Create a simple Sinatra App for [openMSX.FiXato.net][5]
@@ -65,7 +67,6 @@ Current list of tasks is:
 + Add documentation on the YAML configuration files.
 + Add --configure argument that will trigger set up of the configuration files.
 + See if VERSION can be integrated into OpenmsxBuilder instead of just being parsed in the executable.
-+ Add support for releasing both universal build and x86 builds.
 + Make sure all shell commands are output as Debug level logs.
 + Integrate CBIOS builds.
 
