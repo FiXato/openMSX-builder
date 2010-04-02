@@ -49,7 +49,7 @@ class OpenmsxBuilder
     @log.level = Logger::INFO if @options.include?('--verbose')
     @log.level = Logger::DEBUG if @options.include?('--debug')
     @log.debug("Logger created with level #{@log.level}")
-    @current_revision = `svnversion -n #{setting(:source_dir)}`.to_i
+    @current_revision = `svnversion -cn #{setting(:source_dir)}`.split(':').last.to_i
     @fails = 0
     @build_outputs = []
     config
@@ -131,7 +131,7 @@ class OpenmsxBuilder
   def update_svn
     @log.info "openMSX is currently at #{@current_revision}. Proceeding with `svn update`"
     @log.debug `cd #{setting(:source_dir)} && svn up`
-    @new_revision = `svnversion -n #{setting(:source_dir)}`.to_i
+    @new_revision = `svnversion -nc #{setting(:source_dir)}`.split(':').last.to_i
     @log.info "Now at revision #{@new_revision}"
     nil
   end
