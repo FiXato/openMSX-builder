@@ -185,9 +185,12 @@ private
   def build
     cleanup_dmg_locks if openmsx?
     @log.info("Will attempt to build revision #{@new_revision}.")
-    target_cpu=""
-    target_cpu=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if openmsx? && setting(:target_cpu)
-    @build_outputs << `cd #{setting(:source_dir)} && make clean && make #{"staticbindist#{target_cpu}"} 2>&1`
+    build_args=""
+    if openmsx? 
+      build_args+=" staticbindist"
+      build_args+=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if setting(:target_cpu)
+    end
+    @build_outputs << `cd #{setting(:source_dir)} && make clean && make#{"#{builds_args}"} 2>&1`
     if $?.success?
       handle_build_success
       return nil
