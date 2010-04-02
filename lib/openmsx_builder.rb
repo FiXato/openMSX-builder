@@ -190,7 +190,7 @@ private
       build_args+=" staticbindist"
       build_args+=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if setting(:target_cpu)
     end
-    @build_outputs << `cd #{setting(:source_dir)} && make clean && make#{"#{builds_args}"} 2>&1`
+    @build_outputs << `cd #{setting(:source_dir)} && make clean && make#{"#{build_args}"} 2>&1`
     if $?.success?
       handle_build_success
       return nil
