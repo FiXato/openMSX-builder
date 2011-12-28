@@ -28,6 +28,16 @@ class OpenmsxBuilder
         :site_path => 'http://your.host.example/publish/dir',
         :target_cpu => 'x86',
       },
+      :openmsx_x86_64 => {
+        :source_dir => File.expand_path("~/Development/openMSX"),
+        :builds_subdir => 'derived/x86_64-darwin-opt-3rd',
+        :report_bcc => [],
+        :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
+        :nice_name => 'openMSX (x86_64)',
+        :publish_location => 'ssh_host:path/to/existing/publish/dir',
+        :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'x86_64',
+      },
       :openmsx_ppc => {
         :source_dir => File.expand_path("~/Development/openMSX"),
         :builds_subdir => 'derived/ppc-darwin-opt-3rd',
@@ -96,7 +106,7 @@ class OpenmsxBuilder
   def publish_all
     @log.info "Publishing all #{@type} builds found"
     if openmsx?
-      regexp = /openmsx-.+-(\d+)-mac-univ-bin.dmg$/
+      regexp = /openmsx-.+-(\d+)-mac-#{setting(:target_cpu)}-bin.dmg$/
     elsif openmsx_debugger?
       regexp = /openMSX-debugger-(\d+)-mac-x86.tbz$/
     end
@@ -206,7 +216,7 @@ private
 
   def cleanup_dmg_locks
     @log.info("Checking for existing filelocks on DMGs.")
-    locks = `/usr/sbin/lsof | grep #{@new_revision}-mac-univ-bin.dmg`
+    locks = `/usr/sbin/lsof | grep #{@new_revision}-mac-#{setting(:target_cpu)}-bin.dmg`
     @log.debug locks
     locks.each_line do |lock_line|
       pid = lock_line.split[1].to_i
@@ -218,7 +228,7 @@ private
 
   def filemask_for_revision(revision)
     if openmsx?
-      File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-univ-bin.dmg")
+      File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-#{setting(:target_cpu)}-bin.dmg")
     elsif openmsx_debugger?
       File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
     end
