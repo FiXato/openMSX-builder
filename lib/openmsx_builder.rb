@@ -8,7 +8,7 @@ class OpenmsxBuilder
   CONFIG_FILENAME = File.expand_path('~/.openMSX-builder.yaml')
   DEFAULTS = {
     :projects => {
-      :openmsx => {
+      :openmsx_univ => {
         :source_dir => File.expand_path("~/Development/openMSX"),
         :builds_subdir => 'derived/univ-darwin-opt-3rd',
         :report_bcc => [],
@@ -70,7 +70,7 @@ class OpenmsxBuilder
   }
 
   attr_accessor :type,:build_outputs
-  def initialize(options,type=:openmsx)
+  def initialize(options,type=:openmsx_univ)
     @options = options
     @type = type
     @log = Logger.new(STDOUT)
@@ -271,7 +271,7 @@ private
   end
 
   def openmsx?
-    @type == :openmsx
+    @type == :openmsx || @type == :openmsx_univ || @type == :openmsx_x86 || @type == :openmsx_x86_64 
   end
 
   def openmsx_debugger?

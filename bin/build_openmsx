@@ -14,8 +14,15 @@ log.level = Logger::WARN if ARGV.include?('--warn')
 log.level = Logger::INFO if ARGV.include?('--verbose')
 log.level = Logger::DEBUG if ARGV.include?('--debug')
 log.info('-'*50)
-log.info("Starting with openMSX")
-OpenmsxBuilder.new(ARGV,:openmsx).run
+log.info("Starting with openMSX Universal Build")
+OpenmsxBuilder.new(ARGV,:openmsx_univ).run
 log.info('-'*50)
-log.info("Proceeding with openMSX-Debugger")
+log.info("Starting with openMSX 64-bit Build")
+OpenmsxBuilder.new(ARGV,:openmsx_x86_64).run
+log.info('-'*50)
+log.info("Now proceeding with openMSX 32-bit ")
+OpenmsxBuilder.new(ARGV,:openmsx_x86).run
+log.info('-'*50)
+log.info("Ending with openMSX-Debugger")
 OpenmsxBuilder.new(ARGV,:openmsx_debugger).run
+log.info("Build process finished")
