@@ -40,7 +40,7 @@ class OpenmsxBuilder
       },
       :openmsx_ppc => {
         :source_dir => File.expand_path("~/Development/openMSX"),
-        :builds_subdir => 'derived/ppc-darwin-opt-3rd',
+        :builds_subdir => 'derived/ppc-darwin-ppc-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
         :nice_name => 'openMSX (ppc)',
@@ -123,6 +123,10 @@ class OpenmsxBuilder
       elsif openmsx_debugger?
         archive_name = filemask_for_revision(revision)
         archive(File.join(setting(:source_dir),setting(:builds_subdir),'openMSX_Debugger.app'),File.basename(archive_name))
+      end
+      if archive_name.nil?
+        @log.error "No archive could be found for revision #{revision} in '#{File.join(setting(:source_dir),setting(:builds_subdir))}' for target_cpu #{setting(:target_cpu)}"
+        return nil
       end
     end
 
