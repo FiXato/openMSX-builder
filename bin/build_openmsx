@@ -17,6 +17,8 @@ log.info('-'*50)
 log.info("Starting with openMSX 64-bit Build")
 OpenmsxBuilder.new(ARGV,:openmsx_x86_64).run
 log.info('-'*50)
+#Prevent further SVN updates so we continue building the same revision during this round
+ARGV << '--dont-update'
 log.info("Now proceeding with openMSX 32-bit ")
 OpenmsxBuilder.new(ARGV,:openmsx_x86).run
 log.info('-'*50)
