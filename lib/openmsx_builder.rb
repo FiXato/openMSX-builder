@@ -271,7 +271,7 @@ private
   end
 
   def openmsx?
-    @type == :openmsx || @type == :openmsx_univ || @type == :openmsx_x86 || @type == :openmsx_x86_64 
+    @type == :openmsx || @type == :openmsx_univ || @type == :openmsx_x86 || @type == :openmsx_x86_64 || @type == :openmsx_ppc 
   end
 
   def openmsx_debugger?
