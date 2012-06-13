@@ -14,20 +14,22 @@ log.level = Logger::WARN if ARGV.include?('--warn')
 log.level = Logger::INFO if ARGV.include?('--verbose')
 log.level = Logger::DEBUG if ARGV.include?('--debug')
 log.info('-'*50)
-log.info("Starting with openMSX 64-bit Build")
-OpenmsxBuilder.new(ARGV,:openmsx_x86_64).run
-log.info('-'*50)
-#Prevent further SVN updates so we continue building the same revision during this round
-ARGV << '--dont-update'
-log.info("Now proceeding with openMSX 32-bit ")
-OpenmsxBuilder.new(ARGV,:openmsx_x86).run
-log.info('-'*50)
-log.info("Continuing with openMSX PowerPC ")
-OpenmsxBuilder.new(ARGV,:openmsx_ppc).run
-log.info('-'*50)
-log.info("Creating a combined openMSX Universal Build")
-OpenmsxBuilder.new(ARGV,:openmsx_univ).run
-log.info('-'*50)
-log.info("Ending with openMSX-Debugger")
-OpenmsxBuilder.new(ARGV,:openmsx_debugger).run
+
+profiles = [:openmsx_x86_64, :openmsx_x86, :openmsx_ppc, :openmsx_univ, :openmsx_debugger, :openmsx_debugger_x86_64]
+if profile_index = ARGV.index('--profiles')
+  unless ARGV[profile_index + 1]
+    log.info("The following profiles are available: #{profiles.map{|profile|profile.to_s}.join(', ')}")
+    exit
+  end
+  profiles = ARGV[profile_index + 1].split(',').map{|profile| profile.to_sym}
+end
+log.info("Will build the following profiles: #{profiles.join(', ')}")
+profiles.each_with_index do |profile, index|
+  log.info("Starting with #{profile}")
+  OpenmsxBuilder.new(ARGV,profile).run
+  log.info('-'*50)
+
+  #Prevent further SVN updates so we continue building the same revision during this round
+  ARGV << '--dont-update' if index == 0
+end
 log.info("Build process finished")
