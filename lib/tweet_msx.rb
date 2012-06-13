@@ -1,16 +1,16 @@
 require 'logger'
 require 'twitter_oauth'
 require 'yaml'
-# Patch for Ruby 1.9.2
-module Net
-  module HTTPHeader
-    alias_method :url_encode_original, :urlencode
-    def urlencode(str)
-      str = str.to_s if str.kind_of?(Symbol)
-      url_encode_original(str)
-    end
-  end
-end
+# # Patch for Ruby 1.9.2
+# module Net
+#   module HTTPHeader
+#     alias_method :url_encode_original, :urlencode
+#     def urlencode(str)
+#       str = str.to_s if str.kind_of?(Symbol)
+#       url_encode_original(str)
+#     end
+#   end
+# end
 class TweetMsx
   class NotConfigured < RuntimeError;end
   CONFIG_FILENAME = File.expand_path('~/.openMSX-builder-TweetMSX.yaml')
