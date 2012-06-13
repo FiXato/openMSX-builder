@@ -34,6 +34,8 @@ Currently `build_openmsx` supports the following command-line arguments:
 * --dont-update           => Don't update the SVN repository
 * --report-build-failure  => If an error occurs during build, report failure via e-mail
 * --version               => Return the current VERSION of openMSX-Builder
+* --profiles              => Print a list of (hardcoded) profiles to build
+* --profiles name1,name2  => Build just builds with profile name 'name1' and 'name2'
 
 By default only fatal errors will be output via STDOUT.
 However, the following command-line arguments are available to set the verbosity:
@@ -69,6 +71,7 @@ Current list of tasks is:
 + See if VERSION can be integrated into OpenmsxBuilder instead of just being parsed in the executable.
 + Make sure all shell commands are output as Debug level logs.
 + Integrate CBIOS builds.
++ Use the profile names from the YAML config for --profiles instead of hardcoded defaults
 
 ## Notes on Patches/Pull Requests
 ******************************************************************************
@@ -85,7 +88,7 @@ Current list of tasks is:
 
 ## Copyright
 ******************************************************************************
-Copyright (c) 2010 Filip H.F. "FiXato" Slagter. See LICENSE for details.
+Copyright (c) 2010-2012 Filip H.F. "FiXato" Slagter. See LICENSE for details.
 
 
 ******************************************************************************
