@@ -13,7 +13,7 @@ class OpenmsxBuilder
         :builds_subdir => 'derived/univ-darwin-opt-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX (universal)',
+        :nice_name => 'openMSX Universal Mac OS X (ppc/i386/x86_64)',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
         :target_cpu => 'univ',
@@ -23,7 +23,7 @@ class OpenmsxBuilder
         :builds_subdir => 'derived/x86-darwin-opt-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX (x86)',
+        :nice_name => 'openMSX for 32-bit Mac OS X',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
         :target_cpu => 'x86',
@@ -33,7 +33,7 @@ class OpenmsxBuilder
         :builds_subdir => 'derived/x86_64-darwin-opt-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX (x86_64)',
+        :nice_name => 'openMSX for 64-bit Mac OS X',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
         :target_cpu => 'x86_64',
@@ -43,7 +43,7 @@ class OpenmsxBuilder
         :builds_subdir => 'derived/ppc-darwin-ppc-3rd',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX (ppc)',
+        :nice_name => 'openMSX for PowerPC Mac OS',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
         :target_cpu => 'ppc',
@@ -53,9 +53,30 @@ class OpenmsxBuilder
         :builds_subdir => 'derived',
         :report_bcc => [],
         :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
-        :nice_name => 'openMSX Debugger',
+        :nice_name => 'openMSX Debugger, 32-Bit Mac OS X',
         :publish_location => 'ssh_host:path/to/existing/publish/dir',
         :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'x86',
+      },
+      :openmsx_debugger_x86 => {
+        :source_dir => File.expand_path("~/Development/openmsx-debugger"),
+        :builds_subdir => 'derived',
+        :report_bcc => [],
+        :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
+        :nice_name => 'openMSX Debugger, 32-Bit Mac OS X',
+        :publish_location => 'ssh_host:path/to/existing/publish/dir',
+        :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'x86',
+      },
+      :openmsx_debugger_x86_64 => {
+        :source_dir => File.expand_path("~/Development/openmsx-debugger"),
+        :builds_subdir => 'derived',
+        :report_bcc => [],
+        :report_from => "openMSX auto-builder by FiXato <username@mailhost.example>",
+        :nice_name => 'openMSX Debugger, 64-Bit Mac OS X',
+        :publish_location => 'ssh_host:path/to/existing/publish/dir',
+        :site_path => 'http://your.host.example/publish/dir',
+        :target_cpu => 'x86_64',
       },
     },
     :smtp_settings => {
@@ -108,7 +129,7 @@ class OpenmsxBuilder
     if openmsx?
       regexp = /openmsx-.+-(\d+)-mac-#{setting(:target_cpu)}-bin.dmg$/
     elsif openmsx_debugger?
-      regexp = /openMSX-debugger-(\d+)-mac-x86.tbz$/
+      regexp = /openMSX-debugger-(\d+)-mac-#{setting(:target_cpu)}.tbz$/
     end
     Dir.glob(filemask_for_revision('*')).sort.each do |file|
       publish_revision($1,file) if file =~ regexp
@@ -136,7 +157,7 @@ class OpenmsxBuilder
 
     return nil unless @options.include?('--tweet')
     url = File.join(setting(:site_path),File.basename(archive_name))
-    message = "[#{setting(:nice_name)}] Revision #{revision} is now available:\r\n #{url}"
+    message = "[#{setting(:nice_name)}] Revision #{revision} added: \r\n#{url}"
     tweetmsx.update(message)
   rescue TweetMsx::NotConfigured => e
     @log.error e.message
@@ -202,10 +223,13 @@ private
     if openmsx? 
       build_args+=" staticbindist"
       build_args+=" OPENMSX_TARGET_CPU=#{setting(:target_cpu)}" if setting(:target_cpu)
+      build_args+=" CPU_LIST=\"x86 x86_64 ppc\"" if setting(:target_cpu) == 'univ'
     elsif openmsx_debugger?
-      build_args+=" CHANGELOG_REVISION=#{@new_revision}"
+      build_args+=" CHANGELOG_REVISION=#{@new_revision} OPENMSX_TARGET_CPU=#{setting(:target_cpu)} CXX=\"g++ -arch #{setting(:target_cpu) == 'x86' ? 'i386' : setting(:target_cpu)}\""
     end
-    @build_outputs << `cd #{setting(:source_dir)} && make clean && make#{"#{build_args}"} 2>&1`
+    cmd = "cd #{setting(:source_dir)} && make clean && make#{"#{build_args}"} 2>&1"
+    puts cmd
+    @build_outputs << `#{cmd}`
     if $?.success?
       handle_build_success
       return nil
@@ -234,7 +258,7 @@ private
     if openmsx?
       File.join(setting(:source_dir),setting(:builds_subdir),"openmsx-*-#{revision}-mac-#{setting(:target_cpu)}-bin.dmg")
     elsif openmsx_debugger?
-      File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-x86.tbz")
+      File.join(setting(:source_dir),setting(:builds_subdir),"openMSX-debugger-#{revision}-mac-#{setting(:target_cpu)}.tbz")
     end
   end
 
@@ -254,7 +278,7 @@ private
 
   #Capture the weird random build error that seems to be more OSX related than openMSX related.
   def handle_build_hdiutil_error?
-    return false unless build_output.include?('hdiutil: create failed - error 49168')
+    return false unless build_output.include?('hdiutil: create failed - error 49168') || build_output.include?('hdiutil: create failed - Resource busy')
     @fails += 1
     @log.error build_output
     @log.error "Weird bug (attempt #{@fails}/3)"
@@ -279,7 +303,7 @@ private
   end
 
   def openmsx_debugger?
-    @type == :openmsx_debugger
+    @type.to_s.include?('openmsx_debugger')
   end
 
   def report_build_failure
