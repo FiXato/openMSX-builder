@@ -3,7 +3,8 @@
 openMSX-Builder is used for building the latest SVN checkouts of [openMSX][1] and [openMSX-Debugger][2] from [their sourceforge repository][3].  
 It also supports publishing the created builds to an external location via [scp][4]. The original setup publishes to [FiXato's openMSX page][5].  
 Successfully published builds can also be announced via Twitter. [@openmsx_builder][6] is the official Twitter home for openMSX-Builder.  
-
+## Discontinuation notice
+This project is no longer in use as I haven't been the one who provides the macOS builds of openMSX. 
 
 ## Installation Guidelines
 ******************************************************************************
